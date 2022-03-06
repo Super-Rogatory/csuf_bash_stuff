@@ -11,21 +11,26 @@ for i in {1..2}
     http --body "jsonplaceholder.typicode.com/posts?_page=${current_page}" # uses page number to retrieve page from JSONPlaceholder
   done
 
-http --quiet --session=./bar.json httpbin.org/cookies/set?page=3
-current_page_from_foo=`jq --raw-output '.cookies.page.value//-1' foo.json`
-current_page_from_bar=`jq --raw-output '.cookies.page.value//-1' bar.json`
+http --quiet --session=./bar.json httpbin.org/cookies/set?page=3 # sets new value for cookie associated with user bar.
+current_page_from_foo=`jq --raw-output '.cookies.page.value//-1' foo.json` # gets page number set in the cookie for user foo
+current_page_from_bar=`jq --raw-output '.cookies.page.value//-1' bar.json` # gets page number set in the cookie for user bar
+
 if [[ $current_page_from_foo == 2 && $current_page_from_bar == 3 ]]; then
   printf "First test of persistent sessions working properly with different users:\nFoo: ${current_page_from_foo}\nBar: ${current_page_from_bar}\n"
+  echo "Fetching page..."
+  sleep 5s
   http --body "jsonplaceholder.typicode.com/posts?_page=${current_page_from_foo}" # uses page number to retrieve page from JSONPlaceholder for foo
   http --body "jsonplaceholder.typicode.com/posts?_page=${current_page_from_bar}" # uses page number to retrieve page from JSONPlaceholder for bar 
 else
   echo "Not working properly"
 fi
 
-http --quiet --session=./bar.json httpbin.org/cookies/set?page=4
+http --quiet --session=./bar.json httpbin.org/cookies/set?page=4 # sets new value for cookie associated with user bar.
 current_page_from_bar=`jq --raw-output '.cookies.page.value//-1' bar.json`
 if [[ $current_page_from_foo == 2 && $current_page_from_bar == 4 ]]; then
   printf "Second test of persistent sessions working properly with different users:\nFoo: ${current_page_from_foo}\nBar: ${current_page_from_bar}\n"
+   echo "Fetching page..."
+  sleep 5s
   http --body "jsonplaceholder.typicode.com/posts?_page=${current_page_from_foo}" # uses page number to retrieve page from JSONPlaceholder for foo
   http --body "jsonplaceholder.typicode.com/posts?_page=${current_page_from_bar}" # uses page number to retrieve page from JSONPlaceholder for bar 
 else
